@@ -1,0 +1,702 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ReidCoin — Minecraft-сервер с настоящей экономикой</title>
+<meta name="description" content="ReidCoin — Minecraft-сервер с собственной валютой. IP: reidcoin.mcsh.gg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Exo+2:wght@400;600;700&family=Press+Start+2P&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#07140d;--bg2:#0d2418;--card:#0f2b1c;--red:#8b0000;--red2:#a31616;--gold:#c9b36a;--leaf:#7fd49a;--text:#d6e6dc;--mute:#8fa89a;--px:'Press Start 2P','Courier New',monospace;--ui:'Exo 2','Segoe UI',Arial,sans-serif}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth;scroll-padding-top:72px}
+body{font-family:var(--ui);color:var(--text);line-height:1.6;background:radial-gradient(ellipse at 50% -10%,var(--bg2),var(--bg) 60%) fixed;min-height:100vh;overflow-x:hidden}
+#fx{position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:0}
+header,main,footer{position:relative;z-index:1}
+a{color:inherit;text-decoration:none}
+:focus-visible{outline:2px solid var(--gold);outline-offset:3px}
+.wrap{width:min(1080px,100% - 32px);margin:0 auto}
+/* шапка */
+header{position:sticky;top:0;z-index:20;background:rgba(7,20,13,.88);backdrop-filter:blur(8px);border-bottom:1px solid rgba(163,22,22,.35)}
+.bar{display:flex;align-items:center;justify-content:space-between;height:64px;gap:16px}
+.brand{font-family:var(--px);font-size:.85rem;color:#fff}
+.brand b{color:var(--leaf);font-weight:400}.brand i{color:#d23a3a;font-style:normal}
+nav{display:flex;gap:26px;align-items:center;margin-left:auto}
+nav a.l{color:var(--mute);font-weight:600;transition:color .2s}
+nav a.l:hover{color:#fff}
+.btn{display:inline-block;border:2px solid var(--red2);background:var(--red);color:#fff;font:700 1rem var(--ui);padding:11px 24px;border-radius:4px;cursor:pointer;transition:background .2s,box-shadow .2s,transform .1s}
+.btn:hover{background:var(--red2);box-shadow:0 0 18px rgba(163,22,22,.55)}
+.btn:active{transform:translateY(1px)}
+.btn.sm{padding:8px 18px;font-size:.9rem}
+.btn.ghost{background:transparent;border-color:rgba(201,179,106,.5);color:var(--gold)}
+.btn.ghost:hover{background:rgba(201,179,106,.1);box-shadow:none}
+#burger{display:none;background:none;border:1px solid rgba(163,22,22,.6);width:42px;height:42px;border-radius:4px;cursor:pointer;position:relative;transition:transform .15s,background .25s,border-color .25s,box-shadow .25s}
+#burger span{position:absolute;left:10px;right:10px;height:2px;background:#fff;border-radius:2px;transition:transform .35s cubic-bezier(.2,.8,.2,1),opacity .2s,top .35s}
+#burger span:nth-child(1){top:12px}
+#burger span:nth-child(2){top:19px}
+#burger span:nth-child(3){top:26px}
+#burger:active{transform:scale(.88)}
+#burger[aria-expanded=true]{background:var(--red);border-color:var(--red2);box-shadow:0 0 14px rgba(163,22,22,.55)}
+#burger[aria-expanded=true] span:nth-child(1){top:19px;transform:rotate(45deg)}
+#burger[aria-expanded=true] span:nth-child(2){opacity:0;transform:scaleX(0)}
+#burger[aria-expanded=true] span:nth-child(3){top:19px;transform:rotate(-45deg)}
+/* первый экран */
+.hero{min-height:calc(100vh - 64px);display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:40px 0 64px;gap:24px}
+.logo{font-family:var(--px);font-size:clamp(1.9rem,9.4vw,5.6rem);line-height:1.1;letter-spacing:.02em;filter:drop-shadow(0 0 14px rgba(40,160,90,.35)) drop-shadow(0 0 18px rgba(190,30,30,.35));animation:rise 1.1s cubic-bezier(.2,.8,.2,1) both}
+.logo span{background:linear-gradient(90deg,#1e8a4a 50%,#b81c1c 50%);-webkit-background-clip:text;background-clip:text;color:transparent;-webkit-text-fill-color:transparent;display:inline-block}
+@keyframes rise{from{opacity:0;transform:translateY(18px) scale(.97);filter:blur(6px)}}
+.slogan{font-size:clamp(1.05rem,2.6vw,1.45rem);color:var(--gold);max-width:620px;padding:0 8px}
+.cta{display:flex;gap:14px;flex-wrap:wrap;justify-content:center}
+.cta .btn{font-size:1.05rem}
+.status{display:inline-flex;align-items:center;gap:10px;padding:9px 18px;border:1px solid rgba(143,168,154,.3);border-radius:999px;background:rgba(7,20,13,.6);font-weight:600}
+.dot{width:12px;height:12px;border-radius:50%;background:var(--gold);flex:none}
+.status.on .dot{background:#3dff7a;animation:pulse 1.6s infinite}
+.status.off .dot{background:var(--red2);box-shadow:0 0 8px var(--red2)}
+@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(61,255,122,.7)}70%{box-shadow:0 0 0 12px rgba(61,255,122,0)}100%{box-shadow:0 0 0 0 rgba(61,255,122,0)}}
+/* секции */
+section{padding:72px 0}
+h2{font-family:var(--px);font-size:clamp(1rem,3.2vw,1.5rem);line-height:1.5;color:#fff;margin-bottom:10px}
+.sub{color:var(--mute);max-width:560px;margin-bottom:34px}
+.grid{display:grid;gap:18px;grid-template-columns:repeat(auto-fit,minmax(230px,1fr))}
+.card{background:var(--card);border:2px solid rgba(127,212,154,.14);border-radius:6px;padding:24px;transition:border-color .25s,box-shadow .25s}
+.card:hover{border-color:var(--red2);box-shadow:0 0 22px rgba(139,0,0,.35)}
+.card h3{font-size:1.15rem;color:var(--leaf);margin-bottom:8px}
+.card p{color:var(--text);font-size:.97rem}
+.price{font-family:var(--px);font-size:1.05rem;color:var(--gold);margin:14px 0 18px}
+.card.top{border-color:var(--red2)}
+.tag{display:inline-block;background:var(--red);color:#fff;font-size:.8rem;font-weight:700;padding:2px 10px;border-radius:3px;margin-bottom:10px}
+.card ul{list-style:none;color:var(--text);font-size:.95rem}
+.card li{padding-left:20px;position:relative;margin:4px 0}
+.card li:before{content:"◆";position:absolute;left:0;color:var(--red2);font-size:.7rem;top:4px}
+.steps .card{position:relative;padding-top:34px}
+.n{position:absolute;top:-16px;left:20px;font-family:var(--px);font-size:.9rem;background:var(--red);color:#fff;border:2px solid var(--red2);padding:8px 11px;border-radius:4px}
+.ip{font-family:var(--px);font-size:.72rem;color:var(--gold);word-break:break-all}
+.rules{background:rgba(13,36,24,.55);border-left:4px solid var(--red2);border-radius:4px;padding:8px 24px}
+.rules li{margin:12px 0 12px 18px;color:var(--text)}
+footer{border-top:1px solid rgba(163,22,22,.35);background:rgba(7,20,13,.9);padding:32px 0;text-align:center;color:var(--mute);font-size:.92rem}
+.soc{display:flex;gap:12px;justify-content:center;margin-bottom:16px;flex-wrap:wrap}
+/* окно и уведомление */
+dialog{margin:auto;max-width:min(460px,92vw);background:var(--bg2);color:var(--text);border:2px solid var(--red2);border-radius:8px;padding:28px;box-shadow:0 0 50px rgba(0,0,0,.7)}
+dialog::backdrop{background:rgba(3,10,6,.78)}
+dialog h3{font-family:var(--px);font-size:.95rem;line-height:1.5;color:#fff;margin-bottom:14px}
+dialog ol{margin:0 0 20px 20px}dialog li{margin:8px 0}
+#toast{position:fixed;left:50%;bottom:76px;transform:translate(-50%,30px);opacity:0;pointer-events:none;background:#0d2418;border:2px solid var(--leaf);color:#fff;padding:12px 26px;border-radius:6px;font-weight:700;z-index:50;transition:.3s}
+#toast.show{opacity:1;transform:translate(-50%,0)}
+#music{position:fixed;left:16px;bottom:20px;z-index:30;display:flex;align-items:center;gap:8px;background:rgba(7,20,13,.9);color:var(--gold);border:2px solid rgba(201,179,106,.45);border-radius:999px;padding:9px 16px;font:600 .9rem var(--ui);cursor:pointer;transition:border-color .2s,box-shadow .2s}
+#music:hover{border-color:var(--red2);box-shadow:0 0 14px rgba(163,22,22,.5)}
+#music[aria-pressed=true]{color:#fff;border-color:var(--leaf)}
+/* таймер */
+.wipe{text-align:center;padding:40px 0 16px}
+.wipe h2{margin-bottom:6px}
+.wipe .sub{margin:0 auto 26px}
+.clock{display:flex;justify-content:center;align-items:flex-start;gap:clamp(6px,2vw,16px)}
+.u{display:flex;flex-direction:column;align-items:center;gap:8px}
+.u b{display:block;min-width:clamp(62px,17vw,120px);padding:clamp(14px,3vw,24px) 6px;background:rgba(13,36,24,.8);border:2px solid var(--red2);border-radius:6px;font:400 clamp(1.3rem,6.4vw,3rem)/1 var(--px);color:#e84545;text-shadow:0 0 8px #a31616,0 0 20px #8b0000,0 0 38px #8b0000;box-shadow:0 0 22px rgba(139,0,0,.4),inset 0 0 16px rgba(139,0,0,.35)}
+.u small{color:var(--mute);font-size:.85rem}
+.sep{font:400 clamp(1.1rem,5vw,2.2rem)/1 var(--px);color:#a31616;text-shadow:0 0 12px #8b0000;padding-top:clamp(14px,3vw,24px)}
+.done{font:400 clamp(1rem,4vw,1.6rem)/1.5 var(--px);color:#e84545;text-shadow:0 0 12px #8b0000}
+/* кнопка поддержки */
+#support{position:fixed;right:16px;top:50%;transform:translateY(-50%);z-index:30;display:flex;align-items:center;gap:12px}
+#support .neon{opacity:0;transform:translateX(14px);pointer-events:none;white-space:nowrap;font:700 1rem var(--ui);color:#fff;background:rgba(7,20,13,.94);border:2px solid var(--red2);border-radius:6px;padding:8px 14px;text-shadow:0 0 6px #ff4a4a,0 0 14px #c21b1b,0 0 28px #8b0000;box-shadow:0 0 14px rgba(163,22,22,.6),inset 0 0 10px rgba(163,22,22,.3);transition:opacity .3s,transform .3s}
+#support:hover .neon,#support:focus-visible .neon{opacity:1;transform:none}
+#support .orb{position:relative;width:58px;height:58px;border-radius:50%;display:grid;place-items:center;background:radial-gradient(circle at 30% 30%,#14412a,#07140d 70%);border:2px solid var(--leaf);color:var(--leaf);animation:bob 4s ease-in-out infinite,hue 5s ease-in-out infinite}
+#support .orb:before{content:"";position:absolute;inset:-2px;border-radius:50%;border:2px solid var(--red2);animation:ring 3s ease-out infinite}
+#support .orb svg{width:30px;height:30px;fill:currentColor}
+#support:active .orb{filter:brightness(1.4)}
+@keyframes bob{50%{transform:translateY(-7px)}}
+@keyframes hue{0%,100%{box-shadow:0 0 14px rgba(46,160,92,.6);border-color:var(--leaf);color:var(--leaf)}50%{box-shadow:0 0 18px rgba(190,30,30,.75);border-color:#c21b1b;color:#ff7a7a}}
+@keyframes ring{0%{transform:scale(1);opacity:.7}100%{transform:scale(1.7);opacity:0}}
+.soc-card{display:block;color:var(--text)}
+.soc-card h3{font-size:1.2rem}
+.soc-card span{display:inline-block;margin-top:12px;color:var(--gold);font-weight:700}
+.made{margin-top:10px;color:var(--gold)}
+[hidden]{display:none!important}
+/* переключатель режима */
+#perf{display:flex;align-items:center;gap:8px;margin-left:16px;background:rgba(7,20,13,.9);color:var(--gold);border:2px solid rgba(201,179,106,.45);border-radius:999px;padding:7px 14px;font:600 .85rem var(--ui);cursor:pointer;white-space:nowrap;transition:border-color .2s,color .2s}
+#perf:hover{border-color:var(--red2)}
+#perf[aria-pressed=true]{color:#fff;border-color:var(--leaf)}
+#perf svg{width:16px;height:16px;fill:currentColor;flex:none}
+/* монета */
+.coinglow{filter:drop-shadow(0 0 18px rgba(190,30,30,.45)) drop-shadow(0 0 22px rgba(40,160,90,.4))}
+.coinwrap{--cs:150px;width:var(--cs);height:var(--cs);perspective:900px;cursor:grab;touch-action:pan-y;user-select:none;-webkit-user-select:none}
+.coinwrap:active{cursor:grabbing}
+.coin{position:relative;width:100%;height:100%;transform-style:preserve-3d;transform:rotateX(14deg) rotateY(20deg)}
+.coin>div{position:absolute;inset:0;border-radius:50%}
+.rim{background:#8a7a38}
+.rim:nth-child(odd){background:#a89448}
+.face{display:grid;place-items:center;box-sizing:border-box;font:400 calc(var(--cs)*.42)/1 var(--px);color:#e9dca0;text-shadow:0 2px 0 rgba(0,0,0,.45);border:calc(var(--cs)*.05) solid #c9b36a;backface-visibility:hidden;-webkit-backface-visibility:hidden}
+.face:after{content:"";position:absolute;inset:12%;border-radius:50%;border:2px dashed rgba(233,220,160,.55)}
+.face.f{background:radial-gradient(circle at 35% 30%,#2fae66,#126b38 55%,#0a3a20);transform:translateZ(8px)}
+.face.b{background:radial-gradient(circle at 35% 30%,#d03a3a,#8b0000 55%,#4a0606);transform:rotateY(180deg) translateZ(8px)}
+.hint{color:var(--mute);font-size:.85rem;margin-top:-12px}
+/* карта */
+.mapcard{position:relative;display:block;height:clamp(210px,42vw,340px);border:2px solid rgba(127,212,154,.2);border-radius:8px;overflow:hidden;background:#0a1c12;transition:border-color .25s,box-shadow .25s}
+.mapcard:hover{border-color:var(--red2);box-shadow:0 0 26px rgba(139,0,0,.4)}
+.mapgrid{position:absolute;inset:0;display:grid;grid-template-columns:repeat(32,1fr);grid-template-rows:repeat(14,1fr);transition:transform .6s}
+.mapcard:hover .mapgrid{transform:scale(1.05)}
+.mapgrid i{display:block}
+.mapcard:after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(7,20,13,.1),rgba(7,20,13,.75))}
+.pin{position:absolute;z-index:2;transform:translate(-50%,-100%);background:rgba(7,20,13,.92);border:2px solid var(--gold);color:#fff;font:700 .8rem var(--ui);padding:4px 10px;border-radius:4px}
+.pin:after{content:"";position:absolute;left:50%;bottom:-9px;border:6px solid transparent;border-top-color:var(--gold);transform:translateX(-50%)}
+.mapcta{position:absolute;z-index:2;left:0;right:0;bottom:18px;text-align:center}
+/* предсказание */
+.fortune{text-align:center}
+.fortune .sub{margin-left:auto;margin-right:auto}
+.wheelbox{position:relative;width:min(320px,78vw);margin:12px auto 28px;border-radius:50%;box-shadow:0 0 30px rgba(139,0,0,.45)}
+.wheelbox.win{animation:win 1.3s ease-out}
+@keyframes win{0%{box-shadow:0 0 0 rgba(201,179,106,0)}40%{box-shadow:0 0 60px rgba(201,179,106,.85)}100%{box-shadow:0 0 30px rgba(139,0,0,.45)}}
+.wheelbox svg{display:block;width:100%;height:auto}
+.ptr{position:absolute;top:-14px;left:50%;transform:translateX(-50%);z-index:2;border:13px solid transparent;border-top:24px solid var(--gold);border-bottom:0;filter:drop-shadow(0 2px 4px rgba(0,0,0,.6))}
+.ftimer{font:700 1.05rem var(--ui);color:var(--gold)}
+.today{max-width:520px;margin:22px auto 0;padding:16px 22px;background:rgba(13,36,24,.7);border:2px solid var(--red2);border-radius:6px}
+.today b{display:block;color:var(--leaf);margin-bottom:6px}
+.fd p{font-size:1.1rem;margin-bottom:20px}
+/* нижнее меню */
+#bottombar{display:none}
+/* режим производительности */
+html.perf body{background:var(--bg)}
+html.perf #fx{display:none}
+html.perf *,html.perf *:before,html.perf *:after{animation:none!important;text-shadow:none!important;box-shadow:none!important;filter:none!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important}
+html.perf header{background:var(--bg)}
+/* проверка на бота */
+#gate{position:fixed;inset:0;z-index:100;display:flex;align-items:center;justify-content:center;padding:16px;background:radial-gradient(ellipse at 50% 0%,#0d2418,#07140d 70%);transition:opacity .4s}
+#gate.out{opacity:0;pointer-events:none}
+html.human #gate{display:none}
+html:not(.human){overflow:hidden}
+.gatebox{width:min(420px,100%);text-align:center;background:rgba(13,36,24,.9);border:2px solid var(--red2);border-radius:8px;padding:28px 22px;box-shadow:0 0 40px rgba(139,0,0,.4)}
+.gatebox h2{font-size:.95rem;margin-bottom:10px}
+.gq{margin:14px 0 20px;font-size:1.15rem;font-weight:700;color:var(--gold)}
+.gatecoins{display:flex;justify-content:center;gap:18px;margin-bottom:12px}
+.gc{width:76px;height:76px;border-radius:50%;border:4px solid #c9b36a;cursor:pointer;transition:transform .15s,box-shadow .2s}
+.gc:hover{transform:scale(1.08);box-shadow:0 0 18px rgba(201,179,106,.5)}
+.gc:active{transform:scale(.94)}
+.gc.r{background:radial-gradient(circle at 35% 30%,#d03a3a,#8b0000 55%,#4a0606)}
+.gc.g{background:radial-gradient(circle at 35% 30%,#2fae66,#126b38 55%,#0a3a20)}
+.gc.y{background:radial-gradient(circle at 35% 30%,#f0dc8a,#c9b36a 55%,#8a7a38)}
+.gateerr{color:#ff7a7a;font-weight:600;min-height:1.6em}
+.gnote{font-size:.8rem;color:var(--mute);margin-top:6px}
+/* вопросы */
+.faq{display:grid;gap:12px;max-width:760px}
+.faq details{background:var(--card);border:2px solid rgba(127,212,154,.14);border-radius:6px;transition:border-color .25s}
+.faq details:hover,.faq details[open]{border-color:var(--red2)}
+.faq summary{cursor:pointer;list-style:none;padding:16px 52px 16px 20px;font-weight:700;color:var(--leaf);position:relative}
+.faq summary::-webkit-details-marker{display:none}
+.faq summary:after{content:"+";position:absolute;right:20px;top:50%;transform:translateY(-50%);color:var(--red2);font-size:1.5rem;line-height:1;transition:transform .25s}
+.faq details[open] summary:after{transform:translateY(-50%) rotate(45deg)}
+.faq p{padding:0 20px 18px;color:var(--text)}
+.faq a{color:var(--gold);text-decoration:underline}
+@media(max-width:760px){
+#burger{display:block}
+nav{display:flex;visibility:hidden;opacity:0;transform:translateY(-14px);pointer-events:none;position:absolute;top:64px;left:0;right:0;flex-direction:column;gap:0;background:rgba(7,20,13,.97);border-bottom:1px solid rgba(163,22,22,.4);padding:8px 16px 18px;transition:opacity .3s,transform .35s cubic-bezier(.2,.8,.2,1),visibility 0s .35s}
+nav.open{visibility:visible;opacity:1;transform:none;pointer-events:auto;transition:opacity .3s,transform .35s cubic-bezier(.2,.8,.2,1),visibility 0s}
+nav a.l,nav .btn{opacity:0;transform:translateX(-14px);transition:opacity .3s,transform .3s,color .2s,background .2s,box-shadow .2s}
+nav.open a.l,nav.open .btn{opacity:1;transform:none}
+nav.open>:nth-child(1){transition-delay:.05s}
+nav.open>:nth-child(2){transition-delay:.1s}
+nav.open>:nth-child(3){transition-delay:.15s}
+nav.open>:nth-child(4){transition-delay:.2s}
+nav.open>:nth-child(5){transition-delay:.25s}
+nav.open>:nth-child(6){transition-delay:.3s}
+nav a.l{padding:12px 0;width:100%;border-bottom:1px solid rgba(143,168,154,.12)}
+nav .btn{margin-top:14px;text-align:center;width:100%}
+section{padding:52px 0}
+#burger,#nav{display:none!important}
+#perf{margin-left:auto;padding:8px 10px}
+#perf .pl{display:none}
+body{padding-bottom:calc(66px + env(safe-area-inset-bottom,0px))}
+#bottombar{display:grid;grid-template-columns:repeat(4,1fr);position:fixed;left:0;right:0;bottom:0;z-index:40;background:rgba(7,20,13,.97);border-top:1px solid rgba(163,22,22,.55);padding-bottom:env(safe-area-inset-bottom,0px)}
+#bottombar a,#bottombar button{position:relative;display:flex;flex-direction:column;align-items:center;gap:3px;padding:9px 4px 8px;background:none;border:0;color:var(--mute);font:600 .72rem var(--ui);cursor:pointer;transition:color .2s,transform .12s}
+#bottombar svg{width:22px;height:22px;fill:currentColor}
+#bottombar a.active{color:#fff}
+#bottombar a.active:before{content:"";position:absolute;top:0;left:28%;right:28%;height:3px;background:var(--red2);border-radius:0 0 3px 3px}
+#bottombar>*:active{transform:scale(.9);color:var(--gold)}
+#support{top:auto;bottom:calc(78px + env(safe-area-inset-bottom,0px));right:14px;transform:none}
+#support .neon{display:none}
+#support .orb{width:52px;height:52px}
+#music{bottom:calc(78px + env(safe-area-inset-bottom,0px))}
+#toast{bottom:calc(138px + env(safe-area-inset-bottom,0px))}
+.coinwrap{--cs:124px}
+}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}html{scroll-behavior:auto}}
+</style>
+<script>try{if(sessionStorage.getItem('rc_human')==='1')document.documentElement.classList.add('human')}catch(e){}</script>
+<noscript><style>#gate{display:none!important}html{overflow:auto!important}</style></noscript>
+</head>
+<body>
+<div id="gate" role="dialog" aria-modal="true" aria-labelledby="gateT">
+  <div class="gatebox">
+    <h2 id="gateT">Проверка безопасности</h2>
+    <p>Докажи, что ты не бот.</p>
+    <p class="gq" id="gateQ">Загрузка...</p>
+    <div class="gatecoins" id="gateCoins"></div>
+    <p class="gateerr" id="gateErr" role="alert"></p>
+    <p class="gnote">Проверка нужна один раз за сеанс.</p>
+  </div>
+</div>
+<canvas id="fx" aria-hidden="true"></canvas>
+
+<header>
+  <div class="wrap bar">
+    <a href="#home" class="brand"><b>Reid</b><i>Coin</i></a>
+    <button id="burger" aria-label="Открыть меню" aria-expanded="false"><span></span><span></span><span></span></button>
+    <nav id="nav">
+      <a class="l" href="#home">Главная</a>
+      <a class="l" href="#about">О валюте</a>
+      <a class="l" href="#shop">Донат</a>
+      <a class="l" href="#rules">Правила</a>
+      <a class="l" href="#social">Соцсети</a>
+      <a class="btn sm" href="#start">Играть</a>
+    </nav>
+    <button id="perf" aria-pressed="false" title="Переключить режим производительности"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M13 2L4 14h6l-1 8 9-12h-6z"/></svg><span class="pl">Обычный режим</span></button>
+  </div>
+</header>
+
+<main>
+  <div class="wrap hero" id="home">
+    <div class="coinglow"><div class="coinwrap" id="coin" role="img" aria-label="Монета ReidCoin, её можно покрутить"><div class="coin" id="coinbody"><div class="face f">R</div><div class="face b">C</div></div></div></div>
+    <p class="hint">Потяни монету, чтобы покрутить</p>
+    <h1 class="logo" aria-label="ReidCoin"><span>R</span><span>e</span><span>i</span><span>d</span><span>C</span><span>o</span><span>i</span><span>n</span></h1>
+    <p class="slogan">Твоя экономика. Твои правила. Твой мир Minecraft.</p>
+    <div class="cta">
+      <button class="btn" data-copy>Скопировать IP: reidcoin.mcsh.gg</button>
+      <a class="btn ghost" href="#start">Начать играть</a>
+    </div>
+    <div class="status" id="status" role="status" aria-live="polite"><span class="dot"></span><span id="stext">Проверка статуса...</span></div>
+  </div>
+
+  <section class="wipe" id="wipe"><div class="wrap">
+    <h2>До следующего вайпа</h2>
+    <p class="sub">Дата примерная: 1 февраля 2027. Точное время объявим в Discord.</p>
+    <div class="clock" id="clock" role="timer">
+      <div class="u"><b id="td">00</b><small>дней</small></div><div class="sep">:</div>
+      <div class="u"><b id="th">00</b><small>часов</small></div><div class="sep">:</div>
+      <div class="u"><b id="tm">00</b><small>минут</small></div><div class="sep">:</div>
+      <div class="u"><b id="ts">00</b><small>секунд</small></div>
+    </div>
+    <p class="done" id="wipeDone" hidden>Вайп уже начался! Заходи на сервер.</p>
+  </div></section>
+
+  <section id="about"><div class="wrap">
+    <h2>Что такое ReidCoin</h2>
+    <p class="sub">ReidCoin — это игровая валюта сервера. Всё, что ты делаешь в мире, можно превратить в монеты и потратить с пользой.</p>
+    <div class="grid">
+      <div class="card"><h3>Единая валюта</h3><p>Одни и те же монеты работают везде: в магазинах игроков, на аукционе и при обмене.</p></div>
+      <div class="card"><h3>Честная экономика</h3><p>Цены формируют сами игроки. Хороший торговец зарабатывает не меньше, чем шахтёр.</p></div>
+      <div class="card"><h3>Рынок игроков</h3><p>Открой свою лавку, продавай ресурсы и постройки, торгуйся и находи выгодные сделки.</p></div>
+      <div class="card"><h3>Награды за игру</h3><p>Монеты начисляются за активность, задания и достижения. Играй — и богатей.</p></div>
+    </div>
+  </div></section>
+
+  <section id="shop"><div class="wrap">
+    <h2>Магазин и донат</h2>
+    <p class="sub">Привилегии покупаются за игровую валюту ReidCoin. Выбери ранг и получи его на сервере.</p>
+    <div class="grid">
+      <div class="card"><h3>ВИП</h3><p>Базовая привилегия для новичков.</p><div class="price">5 000 монет</div><ul><li>Префикс [ВИП] в чате</li><li>Цветной ник</li></ul><br><button class="btn sm" data-buy="ВИП">Купить</button></div>
+      <div class="card"><h3>ВОИН</h3><p>Для тех, кто уже освоился.</p><div class="price">15 000 монет</div><ul><li>Префикс [ВОИН] в чате</li><li>Дополнительные приваты</li></ul><br><button class="btn sm" data-buy="ВОИН">Купить</button></div>
+      <div class="card"><h3>ЛЕГЕНДА</h3><p>Статус, который заметят все.</p><div class="price">40 000 монет</div><ul><li>Префикс [ЛЕГЕНДА] в чате</li><li>Расширенные возможности</li></ul><br><button class="btn sm" data-buy="ЛЕГЕНДА">Купить</button></div>
+      <div class="card"><h3>ГЛАДИАТОР</h3><p>Для опытных бойцов сервера.</p><div class="price">90 000 монет</div><ul><li>Префикс [ГЛАДИАТОР] в чате</li><li>Расширенные возможности</li></ul><br><button class="btn sm" data-buy="ГЛАДИАТОР">Купить</button></div>
+      <div class="card"><h3>ЗЕВС</h3><p>Почти божественная власть.</p><div class="price">200 000 монет</div><ul><li>Префикс [ЗЕВС] в чате</li><li>Расширенные возможности</li></ul><br><button class="btn sm" data-buy="ЗЕВС">Купить</button></div>
+      <div class="card top"><span class="tag">Высший ранг</span><h3>ПРИНЦ</h3><p>Высший ранг сервера.</p><div class="price">500 000 монет</div><ul><li>Префикс [ПРИНЦ] в чате</li><li>Все возможности привилегий</li></ul><br><button class="btn sm" data-buy="ПРИНЦ">Купить</button></div>
+    </div>
+  </div></section>
+
+  <section id="start"><div class="wrap">
+    <h2>Как начать играть</h2>
+    <p class="sub">Три шага — и ты на сервере.</p>
+    <div class="grid steps">
+      <div class="card"><span class="n">1</span><h3>Скачай Minecraft</h3><p>Установи Java Edition и запусти игру нужной версии.</p></div>
+      <div class="card"><span class="n">2</span><h3>Добавь сервер</h3><p>В разделе «Сетевая игра» нажми «Добавить сервер» и введи адрес:</p><p class="ip">reidcoin.mcsh.gg</p></div>
+      <div class="card"><span class="n">3</span><h3>Зайди и развивайся</h3><p>Подключайся, зарабатывай первые монеты и находи союзников.</p></div>
+    </div>
+  </div></section>
+
+  <section id="fortune"><div class="wrap fortune">
+    <h2>Ежедневное предсказание ReidCoin</h2>
+    <p class="sub">Испытай удачу на сегодня. Колесо можно крутить один раз в 24 часа.</p>
+    <div class="wheelbox" id="wbox"><div class="ptr"></div><svg id="wheel" viewBox="-110 -110 220 220" role="img" aria-label="Колесо фортуны"></svg></div>
+    <button class="btn" id="spin">Крутить рулетку</button>
+    <p class="ftimer" id="ftimer" role="timer" hidden></p>
+    <div class="today" id="today" hidden><b>Твое предсказание на сегодня:</b><p id="todayText"></p></div>
+  </div></section>
+
+  <section id="map"><div class="wrap">
+    <h2>Карта мира ReidCoin</h2>
+    <p class="sub">Территории игроков, рынок и постройки сервера: смотри мир, не заходя в игру.</p>
+    <a class="mapcard" id="mapLink" href="#map">
+      <div class="mapgrid" id="mapgrid" aria-hidden="true"></div>
+      <span class="pin" style="left:34%;top:46%">Спавн</span>
+      <span class="pin" style="left:65%;top:60%">Рынок</span>
+      <div class="mapcta"><span class="btn">Открыть карту</span></div>
+    </a>
+  </div></section>
+
+  <section id="rules"><div class="wrap">
+    <h2>Правила</h2>
+    <div class="rules"><ol>
+      <li>Уважай других игроков: без оскорблений и травли.</li>
+      <li>Читы, баги и сторонние моды, дающие преимущество, запрещены.</li>
+      <li>Не обманывай игроков при торговле и обмене.</li>
+      <li>Полный список правил — на нашем Discord-сервере.</li>
+    </ol></div>
+  </div></section>
+<section id="faq"><div class="wrap">
+    <h2>Частые вопросы</h2>
+    <p class="sub">Ответы на то, что спрашивают чаще всего. Не нашёл своё? Пиши в Discord или на почту.</p>
+    <div class="faq">
+      <details><summary>Как зайти на сервер?</summary><p>Нужен Minecraft Java Edition. В игре открой «Сетевая игра», нажми «Добавить сервер» и введи адрес <b>reidcoin.mcsh.gg</b>. Нужную версию игры уточняй в нашем Discord.</p></details>
+      <details><summary>Что такое ReidCoin и как заработать монеты?</summary><p>ReidCoin — игровая валюта сервера. Её можно получать за активность, задания и торговлю с другими игроками, а тратить в магазинах игроков и на привилегии.</p></details>
+      <details><summary>Как получить привилегию?</summary><p>Привилегии покупаются за монеты ReidCoin. Накопи нужную сумму, создай обращение в нашем Discord и укажи ник и название привилегии. Администратор выдаст её на сервере.</p></details>
+      <details><summary>Когда следующий вайп?</summary><p>Ориентировочно 1 февраля 2027. Точную дату объявим в Discord, а время до вайпа можно смотреть на таймере на сайте.</p></details>
+      <details><summary>Не получается зайти, что делать?</summary><p>Проверь, что адрес введён без ошибок и сверху сайта сервер отображается онлайн. Убедись, что у тебя подходящая версия Minecraft. Если не помогло, напиши в Тех.Поддержку.</p></details>
+      <details><summary>Как связаться с поддержкой?</summary><p>Нажми на значок Discord сбоку на сайте («Тех.Поддержка») или напиши на почту <a href="mailto:reidcoins.gg@gmail.com">reidcoins.gg@gmail.com</a>.</p></details>
+      <details><summary>За что можно получить бан и можно ли обжаловать?</summary><p>Бан выдают за нарушение правил: читы, обман игроков, оскорбления. Правила смотри в разделе «Правила». Если считаешь, что бан выдан ошибочно, напиши в Discord или на почту <a href="mailto:reidcoins.gg@gmail.com">reidcoins.gg@gmail.com</a>.</p></details>
+    </div>
+  </div></section>
+
+  <section id="social"><div class="wrap">
+    <h2>Наши соцсети</h2>
+    <p class="sub">Новости, обновления и видео с сервера. Подписывайся, чтобы ничего не пропустить.</p>
+    <div class="grid">
+      <a class="card soc-card" href="https://discord.gg/eEzBUbtkt" target="_blank" rel="noopener"><h3>Discord</h3><p>Общение, новости сервера и помощь от администрации.</p><span>Вступить в Discord</span></a>
+      <a class="card soc-card" href="https://www.youtube.com/@ReidCoins" target="_blank" rel="noopener"><h3>YouTube</h3><p>Видео, обзоры и трейлеры нашего проекта.</p><span>Открыть канал</span></a>
+      <a class="card soc-card" href="https://www.tiktok.com/@reidcoin" target="_blank" rel="noopener"><h3>TikTok</h3><p>Короткие ролики и лучшие моменты с сервера.</p><span>Открыть профиль</span></a>
+      <a class="card soc-card" href="mailto:reidcoins.gg@gmail.com"><h3>Почта</h3><p>По вопросам поддержки, жалобам и предложениям. reidcoins.gg@gmail.com</p><span>Написать письмо</span></a>
+    </div>
+  </div></section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <div class="soc">
+      <a class="btn sm ghost" href="https://discord.gg/eEzBUbtkt" target="_blank" rel="noopener">Discord</a>
+      <a class="btn sm ghost" href="https://www.youtube.com/@ReidCoins" target="_blank" rel="noopener">YouTube</a>
+      <a class="btn sm ghost" href="https://www.tiktok.com/@reidcoin" target="_blank" rel="noopener">TikTok</a>
+      <a class="btn sm ghost" href="mailto:reidcoins.gg@gmail.com">Почта</a>
+    </div>
+    <p class="made">Создатели: YT_ReidMaster, Tot1emn0u</p>
+    <p>© <span id="yr">2026</span> ReidCoin. Проект не связан с Mojang Studios и Microsoft.</p>
+  </div>
+</footer>
+
+<dialog id="buy">
+  <h3 id="buyTitle">Покупка</h3>
+  <ol>
+    <li>Накопи на сервере нужное количество монет ReidCoin.</li>
+    <li>Открой наш Discord и создай обращение в разделе привилегий.</li>
+    <li>Укажи игровой ник и название привилегии.</li>
+    <li>Администратор выдаст привилегию прямо на сервере.</li>
+  </ol>
+  <div class="cta" style="justify-content:flex-start">
+    <a class="btn sm" href="https://discord.gg/eEzBUbtkt" target="_blank" rel="noopener">Открыть Discord</a>
+    <button class="btn sm ghost" id="buyClose">Закрыть</button>
+  </div>
+</dialog>
+<a id="support" href="https://discord.gg/eEzBUbtkt" target="_blank" rel="noopener" aria-label="Тех.Поддержка в Discord">
+  <span class="neon">Тех.Поддержка</span>
+  <span class="orb"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.317 4.3698a19.7913 19.7913 0 00-4.8851-1.5152.0741.0741 0 00-.0785.0371c-.211.3753-.4447.8648-.6083 1.2495-1.8447-.2762-3.68-.2762-5.4868 0-.1636-.3933-.4058-.8742-.6177-1.2495a.077.077 0 00-.0785-.037 19.7363 19.7363 0 00-4.8852 1.515.0699.0699 0 00-.0321.0277C.5334 9.0458-.319 13.5799.0992 18.0578a.0824.0824 0 00.0312.0561c2.0528 1.5076 4.0413 2.4228 5.9929 3.0294a.0777.0777 0 00.0842-.0276c.4616-.6304.8731-1.2952 1.226-1.9942a.076.076 0 00-.0416-.1057c-.6528-.2476-1.2743-.5495-1.8722-.8923a.077.077 0 01-.0076-.1277c.1258-.0943.2517-.1923.3718-.2914a.0743.0743 0 01.0776-.0105c3.9278 1.7933 8.18 1.7933 12.0614 0a.0739.0739 0 01.0785.0095c.1202.099.246.1981.3728.2924a.077.077 0 01-.0066.1276 12.2986 12.2986 0 01-1.873.8914.0766.0766 0 00-.0407.1067c.3604.698.7719 1.3628 1.225 1.9932a.076.076 0 00.0842.0286c1.961-.6067 3.9495-1.5219 6.0023-3.0294a.077.077 0 00.0313-.0552c.5004-5.177-.8382-9.6739-3.5485-13.6604a.061.061 0 00-.0312-.0286zM8.02 15.3312c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9555-2.4189 2.157-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.9555 2.4189-2.1569 2.4189zm7.9748 0c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9554-2.4189 2.1569-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.946 2.4189-2.1568 2.4189Z"/></svg></span>
+</a>
+<div id="bottombar" role="navigation" aria-label="Быстрое меню">
+  <a href="#home" class="active"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11l9-8 9 8v10h-6v-6H9v6H3z"/></svg><span>Главная</span></a>
+  <a href="#shop"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l9 10-9 10L3 12z"/></svg><span>Магазин</span></a>
+  <button type="button" data-copy aria-label="Скопировать IP сервера"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 8h12v12H8zM4 4h12v2H6v10H4z" fill-rule="evenodd"/></svg><span>IP</span></button>
+  <a href="#rules"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill-rule="evenodd" d="M5 3h12a2 2 0 012 2v16H7a2 2 0 01-2-2zm2 2v12h10V5z"/></svg><span>Правила</span></a>
+</div>
+<button id="music" aria-pressed="false" aria-label="Включить фоновую музыку">♪ <span>Музыка: выкл</span></button>
+<dialog id="fdlg" class="fd">
+  <h3>Твое предсказание на сегодня:</h3>
+  <p id="fdText"></p>
+  <button class="btn sm" id="fdClose">Отлично!</button>
+</dialog>
+<div id="toast" role="status" aria-live="polite">IP скопирован!</div>
+
+<script>
+const IP='reidcoin.mcsh.gg';
+document.getElementById('yr').textContent=new Date().getFullYear();
+
+/* меню */
+const nav=document.getElementById('nav'),burger=document.getElementById('burger');
+burger.onclick=()=>{const o=nav.classList.toggle('open');burger.setAttribute('aria-expanded',o);burger.setAttribute('aria-label',o?'Закрыть меню':'Открыть меню')};
+nav.addEventListener('click',e=>{if(e.target.tagName==='A'){nav.classList.remove('open');burger.setAttribute('aria-expanded',false);burger.setAttribute('aria-label','Открыть меню')}});
+
+/* уведомление и копирование IP */
+const toast=document.getElementById('toast');let tt;
+function say(t){toast.textContent=t;toast.classList.add('show');clearTimeout(tt);tt=setTimeout(()=>toast.classList.remove('show'),2200)}
+async function copyIP(){
+  try{await navigator.clipboard.writeText(IP)}
+  catch(e){const a=document.createElement('textarea');a.value=IP;document.body.appendChild(a);a.select();try{document.execCommand('copy')}catch(_){}a.remove()}
+  say('IP скопирован!');
+}
+document.querySelectorAll('[data-copy]').forEach(b=>b.onclick=copyIP);
+
+/* окно покупки */
+const dlg=document.getElementById('buy');
+document.querySelectorAll('[data-buy]').forEach(b=>b.onclick=()=>{document.getElementById('buyTitle').textContent='Привилегия: '+b.dataset.buy;dlg.showModal()});
+document.getElementById('buyClose').onclick=()=>dlg.close();
+dlg.addEventListener('click',e=>{if(e.target===dlg)dlg.close()});
+
+/* онлайн сервера */
+const st=document.getElementById('status'),stx=document.getElementById('stext');
+async function check(){
+  try{
+    const r=await fetch('https://api.mcsrvstat.us/3/'+IP,{cache:'no-store'});
+    const data=await r.json();
+    if(data.online===true){
+      st.className='status on';
+      const p=data.players||{};
+      stx.textContent='Онлайн: '+(p.online??0)+' / '+(p.max??'?')+' игроков';
+    }else{st.className='status off';stx.textContent='Сервер оффлайн'}
+  }catch(e){st.className='status off';stx.textContent='Сервер оффлайн'}
+}
+check();setInterval(check,60000);
+
+/* таймер до вайпа (по киевскому времени) */
+(()=>{
+  const WIPE=new Date('2027-02-01T00:00:00+02:00').getTime();
+  const el={d:document.getElementById('td'),h:document.getElementById('th'),m:document.getElementById('tm'),s:document.getElementById('ts')};
+  const clock=document.getElementById('clock'),done=document.getElementById('wipeDone');
+  const p=n=>String(n).padStart(2,'0');
+  function tick(){
+    let t=Math.floor((WIPE-Date.now())/1000);
+    if(t<=0){clock.hidden=true;done.hidden=false;clearInterval(id);return}
+    el.d.textContent=p(Math.floor(t/86400));
+    el.h.textContent=p(Math.floor(t%86400/3600));
+    el.m.textContent=p(Math.floor(t%3600/60));
+    el.s.textContent=p(t%60);
+  }
+  const id=setInterval(tick,1000);tick();
+})();
+
+/* тех.поддержка: вставь числовой ID профиля ange1lls, чтобы ссылка вела на профиль */
+const DISCORD_USER_ID='';
+if(DISCORD_USER_ID)document.getElementById('support').href='https://discord.com/users/'+DISCORD_USER_ID;
+
+/* фоновая музыка (создаётся прямо в браузере, файлов не нужно) */
+(()=>{
+  const btn=document.getElementById('music'),lab=btn.querySelector('span');
+  let ac,master,lp,on=false,timer;
+  const scale=[220,261.63,329.63,392,440,523.25,659.25];
+  function build(){
+    ac=new(window.AudioContext||window.webkitAudioContext)();
+    master=ac.createGain();master.gain.value=0;master.connect(ac.destination);
+    lp=ac.createBiquadFilter();lp.type='lowpass';lp.frequency.value=1100;lp.connect(master);
+    const dl=ac.createDelay(1),fb=ac.createGain(),wet=ac.createGain();
+    dl.delayTime.value=.45;fb.gain.value=.45;wet.gain.value=.5;
+    lp.connect(dl);dl.connect(fb);fb.connect(dl);dl.connect(wet);wet.connect(master);
+    [110,164.81,220,261.63].forEach((f,i)=>{
+      const o=ac.createOscillator(),g=ac.createGain(),l=ac.createOscillator(),lg=ac.createGain();
+      o.type=i%2?'triangle':'sine';o.frequency.value=f;o.detune.value=(Math.random()-.5)*10;
+      g.gain.value=.09;l.frequency.value=.05+i*.03;lg.gain.value=.05;
+      l.connect(lg);lg.connect(g.gain);o.connect(g);g.connect(lp);o.start();l.start();
+    });
+  }
+  function note(){
+    if(!on)return;
+    const t=ac.currentTime,o=ac.createOscillator(),g=ac.createGain();
+    o.type='sine';o.frequency.value=scale[Math.random()*scale.length|0];
+    g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(.12,t+.03);g.gain.exponentialRampToValueAtTime(.001,t+3.5);
+    o.connect(g);g.connect(lp);o.start(t);o.stop(t+3.6);
+    timer=setTimeout(note,2500+Math.random()*3000);
+  }
+  btn.onclick=async()=>{
+    if(!ac)build();
+    on=!on;
+    btn.setAttribute('aria-pressed',on);
+    lab.textContent=on?'Музыка: вкл':'Музыка: выкл';
+    btn.setAttribute('aria-label',on?'Выключить фоновую музыку':'Включить фоновую музыку');
+    if(on){await ac.resume();master.gain.setTargetAtTime(.6,ac.currentTime,.8);note()}
+    else{clearTimeout(timer);master.gain.setTargetAtTime(0,ac.currentTime,.3);setTimeout(()=>{if(!on)ac.suspend()},1200)}
+  };
+  document.addEventListener('visibilitychange',()=>{
+    if(!ac||!on)return;
+    if(document.hidden)ac.suspend();else ac.resume();
+  });
+})();
+
+/* проверка на бота (лёгкая защита от простых скриптов) */
+(()=>{
+  const g=document.getElementById('gate'),html=document.documentElement;
+  if(html.classList.contains('human')){g.remove();return}
+  const q=document.getElementById('gateQ'),box=document.getElementById('gateCoins'),err=document.getElementById('gateErr');
+  const types=[{k:'r',w:'красную',a:'Красная монета'},{k:'g',w:'зелёную',a:'Зелёная монета'},{k:'y',w:'золотую',a:'Золотая монета'}];
+  let target,t0;
+  function build(){
+    const order=types.slice().sort(()=>Math.random()-.5);
+    target=types[Math.random()*3|0];
+    q.textContent='Нажми на '+target.w+' монету';
+    box.innerHTML='';
+    order.forEach(t=>{const b=document.createElement('button');b.type='button';b.className='gc '+t.k;b.setAttribute('aria-label',t.a);b.onclick=e=>pick(e,t);box.appendChild(b)});
+    t0=performance.now();
+  }
+  function pick(e,t){
+    if(!e.isTrusted||performance.now()-t0<400){err.textContent='Слишком быстро. Попробуй ещё раз.';build();return}
+    if(t!==target){err.textContent='Не та монета. Попробуй ещё раз.';build();return}
+    err.textContent='';
+    try{sessionStorage.setItem('rc_human','1')}catch(_){}
+    g.classList.add('out');
+    setTimeout(()=>{html.classList.add('human');g.remove()},400);
+  }
+  build();
+  box.firstChild.focus();
+})();
+
+/* режим производительности */
+(()=>{
+  const html=document.documentElement,btn=document.getElementById('perf'),lab=btn.querySelector('.pl');
+  let saved=null;try{saved=localStorage.getItem('rc_perf')}catch(e){}
+  let on=saved===null?((navigator.hardwareConcurrency||8)<=2||(navigator.deviceMemory||8)<=2):saved==='1';
+  function apply(){
+    html.classList.toggle('perf',on);
+    btn.setAttribute('aria-pressed',on);
+    lab.textContent=on?'Режим производительности':'Обычный режим';
+    btn.setAttribute('aria-label',lab.textContent+'. Нажми, чтобы переключить');
+    dispatchEvent(new Event('perfchange'));
+  }
+  btn.onclick=()=>{on=!on;try{localStorage.setItem('rc_perf',on?'1':'0')}catch(e){};apply();say(on?'Режим производительности включён':'Обычный режим включён')};
+  apply();
+})();
+
+/* 3D-монета */
+(()=>{
+  const w=document.getElementById('coin'),c=document.getElementById('coinbody');
+  for(let z=-7;z<=7;z++){const d=document.createElement('div');d.className='rim';d.style.transform='translateZ('+z+'px)';c.appendChild(d)}
+  const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const perf=()=>document.documentElement.classList.contains('perf');
+  const base=()=>(reduce||perf())?0:.7;
+  let ang=20,vel=0,drag=false,lastX=0,lastT=0,run=false;
+  const render=()=>{c.style.transform='rotateX(14deg) rotateY('+ang+'deg)'};
+  function loop(){
+    if(!drag){vel+=(base()-vel)*.02;ang+=vel}
+    render();
+    if(!drag&&base()===0&&Math.abs(vel)<.05){run=false;vel=0;return}
+    requestAnimationFrame(loop);
+  }
+  function start(){if(!run){run=true;requestAnimationFrame(loop)}}
+  w.addEventListener('pointerdown',e=>{drag=true;lastX=e.clientX;lastT=performance.now();vel=0;try{w.setPointerCapture(e.pointerId)}catch(_){}start()});
+  w.addEventListener('pointermove',e=>{if(!drag)return;const dx=e.clientX-lastX;lastX=e.clientX;lastT=performance.now();ang+=dx*.9;vel=dx*.9;render()});
+  const end=()=>{if(!drag)return;drag=false;if(performance.now()-lastT>90)vel=0;start()};
+  w.addEventListener('pointerup',end);w.addEventListener('pointercancel',end);
+  addEventListener('perfchange',start);
+  render();start();
+})();
+
+/* ежедневное предсказание */
+(()=>{
+  const P=["Сегодня в шахте тебя ждет алмазная жила, а твой баланс ReidCoin вырастет вдвое!",
+  "Осторожнее в Незере: сегодня криперы и гасты особенно хитрые, но удача на твоей стороне.",
+  "Отличный день для торговли на спавне — твои сделки принесут гору монет!",
+  "Сегодня тебе повезет найти редкий лут в данже. Не забудь взять с собой тотем!",
+  "Звезды Minecraft говорят: пора построить самый крутой дом на сервере ReidCoin.",
+  "Сегодня твой меч бьет точнее, а кирка копает быстрее. Вперед к приключениям!",
+  "Неожиданный союзник поможет тебе в трудную минуту — заводи новых друзей на сервере.",
+  "Удача улыбается смелым: сегодня идеальный день для рейдов и новых открытий!"];
+  const L=["Алмазы","Незер","Торговля","Лут","Дом","Удар","Союзник","Рейд"];
+  const svg=document.getElementById('wheel'),btn=document.getElementById('spin'),ft=document.getElementById('ftimer'),td=document.getElementById('today'),tt=document.getElementById('todayText'),dlg=document.getElementById('fdlg'),dt=document.getElementById('fdText'),box=document.getElementById('wbox');
+  const KEY='rc_fortune_v1',DAY=864e5,reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const pt=(r,a)=>[(r*Math.sin(a*Math.PI/180)).toFixed(2),(-r*Math.cos(a*Math.PI/180)).toFixed(2)];
+  let h='';
+  for(let i=0;i<8;i++){
+    const a0=i*45,[x0,y0]=pt(100,a0),[x1,y1]=pt(100,a0+45);
+    h+='<path d="M0 0L'+x0+' '+y0+'A100 100 0 0 1 '+x1+' '+y1+'Z" fill="'+(i%2?'#6e0d0d':'#0f3a22')+'" stroke="#c9b36a" stroke-width="1.5"/>';
+    h+='<text transform="rotate('+(a0+22.5)+') translate(0,-64)" text-anchor="middle" dominant-baseline="middle" font-size="9" font-weight="700" fill="#efe7bd" style="font-family:var(--ui)">'+L[i]+'</text>';
+  }
+  h+='<circle r="106" fill="none" stroke="#c9b36a" stroke-width="4"/><circle r="15" fill="#07140d" stroke="#c9b36a" stroke-width="3"/>';
+  svg.innerHTML=h;
+  const read=()=>{try{const o=JSON.parse(localStorage.getItem(KEY));if(o&&o.i>=0&&o.i<8&&Date.now()-o.t<DAY&&o.t<=Date.now()+6e4)return o}catch(e){}return null};
+  const write=o=>{try{localStorage.setItem(KEY,JSON.stringify(o))}catch(e){}};
+  const f2=n=>String(n).padStart(2,'0');
+  let rot=0,spinning=false;
+  function ui(){
+    if(spinning){btn.disabled=true;return}
+    const o=read();
+    if(!o){btn.hidden=false;btn.disabled=false;ft.hidden=true;td.hidden=true;return}
+    btn.hidden=true;ft.hidden=false;
+    const s=Math.max(0,Math.ceil((o.t+DAY-Date.now())/1000));
+    ft.textContent='Следующее предсказание через: '+f2(Math.floor(s/3600))+':'+f2(Math.floor(s%3600/60))+':'+f2(s%60);
+  }
+  function chime(){
+    try{
+      const a=new(window.AudioContext||window.webkitAudioContext)(),t=a.currentTime;
+      [523.25,659.25,783.99].forEach((f,k)=>{
+        const o=a.createOscillator(),g=a.createGain(),s=t+k*.12;
+        o.type='triangle';o.frequency.value=f;
+        g.gain.setValueAtTime(0,s);g.gain.linearRampToValueAtTime(.12,s+.02);g.gain.exponentialRampToValueAtTime(.001,s+1.2);
+        o.connect(g);g.connect(a.destination);o.start(s);o.stop(s+1.3);
+      });
+      setTimeout(()=>a.close(),2200);
+    }catch(e){}
+  }
+  const o0=read();
+  if(o0){rot=((360-(o0.i*45+22.5))%360+360)%360;svg.style.transform='rotate('+rot+'deg)';tt.textContent=P[o0.i];td.hidden=false}
+  ui();setInterval(ui,1000);
+  btn.onclick=()=>{
+    if(spinning||read())return;
+    spinning=true;btn.disabled=true;
+    const i=Math.floor(Math.random()*8),j=(Math.random()-.5)*28;
+    const norm=(((-(i*45+22.5+j))%360)+360)%360,dur=reduce?.6:5.2;
+    rot=Math.ceil(rot/360)*360+(5+Math.floor(Math.random()*3))*360+norm;
+    write({t:Date.now(),i});
+    svg.style.transition='transform '+dur+'s cubic-bezier(.12,.62,.12,1)';
+    svg.style.transform='rotate('+rot+'deg)';
+    setTimeout(()=>{
+      spinning=false;tt.textContent=P[i];td.hidden=false;dt.textContent=P[i];
+      box.classList.remove('win');void box.offsetWidth;box.classList.add('win');
+      chime();ui();
+      if(!dlg.open)dlg.showModal();
+    },dur*1000+150);
+  };
+  document.getElementById('fdClose').onclick=()=>dlg.close();
+  dlg.addEventListener('click',e=>{if(e.target===dlg)dlg.close()});
+})();
+
+/* карта мира (ссылку на динамическую карту вставь сюда, например https://map.твойсайт.ru) */
+const MAP_URL='';
+(()=>{
+  const g=document.getElementById('mapgrid'),a=document.getElementById('mapLink');
+  const cols=['#0b2a1c','#0d3a22','#14502e','#1c6b3c','#7a1212'];
+  let html='';
+  for(let r=0;r<14;r++)for(let c=0;c<32;c++){
+    const v=Math.sin(c*.45)+Math.cos(r*.7+c*.2)+Math.sin((c+r)*.3);
+    const k=v<-1.2?0:v<-.3?1:v<.5?2:v<1.3?3:4;
+    const o=(.72+((c*37+r*61)%29)/100).toFixed(2);
+    html+='<i style="background:'+cols[k]+';opacity:'+o+'"></i>';
+  }
+  g.innerHTML=html;
+  if(MAP_URL){a.href=MAP_URL;a.target='_blank';a.rel='noopener'}
+  else a.addEventListener('click',e=>{e.preventDefault();say('Карта скоро появится')});
+})();
+
+/* подсветка пункта нижнего меню */
+(()=>{
+  const links=[...document.querySelectorAll('#bottombar a')];
+  const map=new Map(links.map(a=>[a.getAttribute('href').slice(1),a]));
+  const io=new IntersectionObserver(es=>{es.forEach(e=>{if(e.isIntersecting){links.forEach(l=>l.classList.remove('active'));const l=map.get(e.target.id);if(l)l.classList.add('active')}})},{rootMargin:'-45% 0px -50% 0px'});
+  map.forEach((_,id)=>{const el=document.getElementById(id);if(el)io.observe(el)});
+})();
+
+/* частицы */
+(()=>{
+  const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const c=document.getElementById('fx'),x=c.getContext('2d');let w,h,ps=[],run=false;
+  const cols=['rgba(46,160,92,','rgba(30,110,64,','rgba(190,30,30,','rgba(139,0,0,'];
+  const off=()=>reduce||document.documentElement.classList.contains('perf');
+  function size(){w=c.width=innerWidth;h=c.height=innerHeight;ps=Array.from({length:Math.min(70,Math.round(w*h/18000))},mk)}
+  function mk(){return{x:Math.random()*w,y:Math.random()*h,r:Math.random()*2+.8,vy:-(Math.random()*.4+.1),vx:(Math.random()-.5)*.25,a:Math.random()*.6+.2,c:cols[Math.random()*4|0],t:Math.random()*6}}
+  function tick(){
+    if(off()){x.clearRect(0,0,w,h);run=false;return}
+    x.clearRect(0,0,w,h);
+    for(const p of ps){
+      p.t+=.02;p.x+=p.vx+Math.sin(p.t)*.15;p.y+=p.vy;
+      if(p.y<-10){p.y=h+10;p.x=Math.random()*w}
+      x.fillStyle=p.c+p.a+')';x.shadowColor=p.c+'.9)';x.shadowBlur=10;
+      x.fillRect(p.x,p.y,p.r*1.6,p.r*1.6);
+    }
+    requestAnimationFrame(tick);
+  }
+  function start(){if(!off()&&!run){run=true;requestAnimationFrame(tick)}}
+  addEventListener('resize',size);addEventListener('perfchange',start);size();start();
+})();
+</script>
+</body>
+</html>
